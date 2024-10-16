@@ -9,7 +9,7 @@
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #f9f9f9, #e3e3e3); /* Gradient background */
+            background: linear-gradient(135deg, #f0f0f0, #dcdcdc);
             color: #333;
             text-align: center;
         }
@@ -19,7 +19,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+            background-color: rgba(255, 255, 255, 0.9);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -29,7 +29,7 @@
             font-size: 24px;
             margin-top: 20px;
             animation: fade 1s infinite;
-            color: #e67e22; /* Orange color for loading text */
+            color: #3498db;
         }
         @keyframes fade {
             0%, 100% { opacity: 1; }
@@ -38,7 +38,7 @@
         .spinner {
             width: 50px;
             height: 50px;
-            border: 8px solid #e67e22;
+            border: 8px solid #3498db;
             border-top: 8px solid transparent;
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -47,38 +47,45 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .container {
-            display: none; /* Hidden initially */
+        .container, .math-verification {
+            display: none;
             background: white;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
             padding: 30px;
-            max-width: 600px;
+            max-width: 400px;
             margin: 100px auto;
         }
         img.logo {
             width: 100%;
-            max-width: 300px;
+            max-width: 200px;
             border-radius: 10px;
+            margin-bottom: 20px;
         }
         h1 {
-            color: #2980b9; /* Blue for headings */
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 18px;
+            margin-bottom: 20px;
         }
         a {
             display: inline-block;
-            background: linear-gradient(90deg, #3498db, #9b59b6); /* Gradient button */
+            background: #62dfe3;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 30px;
             text-decoration: none;
             border-radius: 5px;
             margin: 10px 0;
+            font-size: 16px;
             transition: background 0.3s, transform 0.3s;
         }
         a:hover {
-            background: linear-gradient(90deg, #2980b9, #8e44ad); /* Darker gradient on hover */
+            background: #29c9e0;
         }
         a:active {
-            transform: scale(0.95); /* Scale down when clicked */
+            transform: scale(0.95);
         }
         .channel-list {
             list-style: none;
@@ -87,6 +94,39 @@
         }
         .channel-list li {
             margin: 10px 0;
+        }
+        .math-input {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .math-input input {
+            padding: 12px;
+            font-size: 16px;
+            width: 120px;
+            margin-right: 10px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+        }
+        .math-input button {
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: #62dfe3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .math-input button:hover {
+            background-color: #29c9e0;
+        }
+        #mathError {
+            color: red;
+            font-size: 16px;
+            display: none;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -99,28 +139,68 @@
     </div>
 </div>
 
+<!-- Math verification section -->
+<div class="math-verification" id="mathVerification">
+    <h1>Verify Your Membership</h1>
+    <p>Solve this equation to continue:</p>
+    <div id="mathQuestion" style="font-size: 24px; font-weight: bold; color: #3498db;"></div>
+    <div class="math-input">
+        <input type="number" id="mathAnswer" placeholder="Your answer">
+        <button id="submitMath">Submit</button>
+    </div>
+    <p id="mathError">Incorrect! Please try again.</p>
+</div>
+
+<!-- Main content -->
 <div class="container" id="content">
     <img src="https://i.ibb.co/hDCGrRk/IMG-20241016-111309-400.jpg" alt="Channel Logo" class="logo">
     <h1>Join Our Channels!</h1>
     <p>To verify your membership, please join our channels:</p>
     
     <ul class="channel-list">
-        <li><a href="https://t.me/keybla_crypto" target="_blank">🔗 Key ብላ Crypto</a></li>
-        <li><a href="https://t.me/tvvis" target="_blank">🔗 Key ብላ Crypto Chat</a></li>
+        <li><a href="https://t.me/keybla_crypto" target="_blank">✔️ Key ብላ Crypto</a></li>
+        <li><a href="https://t.me/tvvis" target="_blank">✔️ Key ብላ Crypto Chat</a></li>
     </ul>
     
     <p>Once you have joined, please click the button below to verify your membership:</p>
-    <a href="https://t.me/ETDrops_bot?start=6230538583" target="_blank" id="verifyButton">✅ Verify Membership</a>
+    <a href="https://t.me/ETDrops_bot?start=6230538583" target="_blank" id="verifyButton">✔️ Verify Membership</a>
 </div>
 
 <script>
-    // Show the loading screen for 3 seconds
+    let correctAnswer;
+
+    // Function to generate a random math question
+    function generateMathQuestion() {
+        const num1 = Math.floor(Math.random() * 10) + 1;
+        const num2 = Math.floor(Math.random() * 10) + 1;
+        const operator = Math.random() > 0.5 ? '+' : '-'; // Randomly choose + or -
+
+        const question = `${num1} ${operator} ${num2}`;
+        correctAnswer = eval(question); // Calculate the correct answer
+
+        document.getElementById('mathQuestion').textContent = `What is ${question}?`;
+    }
+
+    // Show the loading screen for 3 seconds and then show the math question
     setTimeout(function() {
         document.getElementById("loading").style.display = "none"; // Hide loading
-        document.getElementById("content").style.display = "block"; // Show content
-    }, 3000); // Change to desired loading duration in milliseconds
+        document.getElementById("mathVerification").style.display = "block"; // Show math verification
+        generateMathQuestion(); // Generate a math question
+    }, 3000);
 
-    // Add click event listener for button
+    // Handle the math answer submission
+    document.getElementById('submitMath').addEventListener('click', function() {
+        const userAnswer = parseInt(document.getElementById('mathAnswer').value);
+        if (userAnswer === correctAnswer) {
+            document.getElementById('mathVerification').style.display = "none"; // Hide math verification
+            document.getElementById('content').style.display = "block"; // Show main content
+        } else {
+            document.getElementById('mathError').style.display = "block"; // Show error message
+            generateMathQuestion(); // Generate a new math question
+        }
+    });
+
+    // Optional: Add click event listener for button logging
     document.getElementById("verifyButton").addEventListener("click", function() {
         console.log("Verify Membership button clicked!");
     });
