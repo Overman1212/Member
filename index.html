@@ -47,7 +47,7 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .container, .math-verification {
+        .container {
             display: none;
             background: white;
             border-radius: 10px;
@@ -95,38 +95,53 @@
         .channel-list li {
             margin: 10px 0;
         }
-        .math-input {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 20px 0;
-        }
-        .math-input input {
-            padding: 12px;
-            font-size: 16px;
-            width: 120px;
-            margin-right: 10px;
-            border: 2px solid #3498db;
-            border-radius: 5px;
-        }
-        .math-input button {
-            padding: 12px 20px;
-            font-size: 16px;
-            background-color: #62dfe3;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        .math-input button:hover {
-            background-color: #29c9e0;
-        }
-        #mathError {
-            color: red;
-            font-size: 16px;
+        .captcha-box {
             display: none;
-            margin-top: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 400px;
+            margin: 100px auto;
+        }
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #000;
+            margin-right: 10px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .checkbox.loading {
+            border-radius: 50%;
+            border: 3px solid #ccc;
+            border-top-color: #000;
+            animation: spin 1s linear infinite;
+        }
+        .checkbox.checked {
+            background-color: #e0ffe0;
+            border-color: #4caf50;
+            animation: none;
+        }
+        .checkbox.checked::before {
+            content: "✔";
+            color: #4caf50;
+            position: absolute;
+            top: -3px;
+            left: 2px;
+            font-size: 20px;
+        }
+        .captcha-text {
+            font-size: 16px;
+        }
+        .recaptcha-logo {
+            margin-left: auto;
+            width: 30px;
+            height: 30px;
+            background: url('https://www.gstatic.com/recaptcha/api2/logo_48.png') no-repeat center;
+            background-size: contain;
         }
     </style>
 </head>
@@ -139,16 +154,14 @@
     </div>
 </div>
 
-<!-- Math verification section -->
-<div class="math-verification" id="mathVerification">
+<!-- reCAPTCHA Style Verification -->
+<div class="captcha-box" id="captchaBox">
     <h1>Verify Your Membership</h1>
-    <p>Solve this equation to continue:</p>
-    <div id="mathQuestion" style="font-size: 24px; font-weight: bold; color: #3498db;"></div>
-    <div class="math-input">
-        <input type="number" id="mathAnswer" placeholder="Your answer">
-        <button id="submitMath">Submit</button>
+    <div style="display: flex; align-items: center; justify-content: center;">
+        <div class="checkbox" id="checkbox"></div>
+        <div class="captcha-text">I'm not a robot</div>
+        <div class="recaptcha-logo"></div>
     </div>
-    <p id="mathError">Incorrect! Please try again.</p>
 </div>
 
 <!-- Main content -->
@@ -167,42 +180,24 @@
 </div>
 
 <script>
-    let correctAnswer;
-
-    // Function to generate a random math question
-    function generateMathQuestion() {
-        const num1 = Math.floor(Math.random() * 10) + 1;
-        const num2 = Math.floor(Math.random() * 10) + 1;
-        const operator = Math.random() > 0.5 ? '+' : '-'; // Randomly choose + or -
-
-        const question = `${num1} ${operator} ${num2}`;
-        correctAnswer = eval(question); // Calculate the correct answer
-
-        document.getElementById('mathQuestion').textContent = `What is ${question}?`;
-    }
-
-    // Show the loading screen for 3 seconds and then show the math question
+    // Show the loading screen for 3 seconds, then display the captcha
     setTimeout(function() {
         document.getElementById("loading").style.display = "none"; // Hide loading
-        document.getElementById("mathVerification").style.display = "block"; // Show math verification
-        generateMathQuestion(); // Generate a math question
+        document.getElementById("captchaBox").style.display = "block"; // Show captcha verification
     }, 3000);
 
-    // Handle the math answer submission
-    document.getElementById('submitMath').addEventListener('click', function() {
-        const userAnswer = parseInt(document.getElementById('mathAnswer').value);
-        if (userAnswer === correctAnswer) {
-            document.getElementById('mathVerification').style.display = "none"; // Hide math verification
-            document.getElementById('content').style.display = "block"; // Show main content
-        } else {
-            document.getElementById('mathError').style.display = "block"; // Show error message
-            generateMathQuestion(); // Generate a new math question
-        }
-    });
-
-    // Optional: Add click event listener for button logging
-    document.getElementById("verifyButton").addEventListener("click", function() {
-        console.log("Verify Membership button clicked!");
+    // Handle checkbox click
+    document.getElementById('checkbox').addEventListener('click', function() {
+        if (this.classList.contains('checked')) return; // Prevent further clicks after checked
+        this.classList.add('loading');
+        
+        setTimeout(() => {
+            this.classList.remove('loading');
+            this.classList.add('checked');
+            // Hide the captcha box and show the main content
+            document.getElementById('captchaBox').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }, 2000); // Simulate loading for 2 seconds
     });
 </script>
 
